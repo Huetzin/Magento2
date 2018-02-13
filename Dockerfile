@@ -3,9 +3,10 @@ FROM php:7.1.13-apache-jessie
 ENV PHP_MEMORY_LIMIT=4G
 ENV PHP_DEFAULT_TIMEZONE=America/Mexico_City
 ENV SERVER_DOCROOT=/var/www/html
-ENV MAGENTO_USER=magento
 ENV PUBLIC_KEY=0240f44287e3009842c4679d1e244313
 ENV PRIVATE_KEY=a82dc5067b1d30f5fa5c51d079caa2ad
+ENV MAGENTO_USER=magento
+ENV MAGENTO_VERSION=LATEST
 
 RUN buildDeps=" \
         libmysqlclient-dev \
@@ -13,6 +14,7 @@ RUN buildDeps=" \
         build-essential \
     " \
     runtimeDeps=" \
+        netcat \
         vim \
         curl \
         git \
@@ -68,11 +70,12 @@ RUN apt-get update && apt-get install -y nodejs
 COPY /etc/php.ini /usr/local/etc/php/
 COPY /etc/000-default.conf /etc/apache2/sites-available/
 COPY /etc/auth.json /home/${MAGENTO_USER}/.composer/
+COPY /scripts/context.sh /usr/local/bin/
 COPY entrypoint.sh /usr/local/bin/
 
  ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
 
  EXPOSE 80
- CMD ["apache2-foreground"]
+ CMD ["context.sh"]
 
 
