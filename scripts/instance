@@ -1,0 +1,19 @@
+#!/bin/bash
+
+args=("$@")
+ver=$(php ${SERVER_DOCROOT}/bin/magento --version 1>/dev/null)
+
+if [ "${args[0]}" == "-i" ]
+then
+    if [ -z $ver ]
+    then
+        if [ $MAGENTO_VERSION == 'LATEST' ]
+        then
+            $(composer create-project --repository-url=https://repo.magento.com/ magento/project-community-edition ${SERVER_DOCROOT})
+        else
+            $(composer create-project --repository-url=https://repo.magento.com/ magento/project-community-edition=${MAGENTO_VERSION} ${SERVER_DOCROOT})
+        fi
+    fi
+    else
+    echo "Error! Option not Found."
+fi
