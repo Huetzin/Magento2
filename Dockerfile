@@ -20,12 +20,14 @@ RUN buildDeps=" \
         git \
         cron \
         sudo \
+        openssh-server\
+        supervisor \
         # mysql-client\
         libfreetype6-dev \
         libicu-dev \
         libjpeg-dev \
         libmcrypt-dev \
-        libpng12-dev \
+        # libpng12-dev \
         libpq-dev \
         libxml2-dev \
         libxslt1-dev \
@@ -34,8 +36,8 @@ RUN buildDeps=" \
     && docker-php-ext-install bcmath calendar intl mcrypt opcache pdo_mysql soap zip xsl \
     && docker-php-ext-configure gd --with-freetype-dir=/usr/include/ --with-jpeg-dir=/usr/include/ \
     && docker-php-ext-install gd \
-    && pecl install -o -f xdebug \
-    && docker-php-ext-enable xdebug \
+    # && pecl install -o -f xdebug \
+    # && docker-php-ext-enable xdebug \
     && apt-get purge -y --auto-remove $buildDeps \
     && rm -r /var/lib/apt/lists/* \
     && a2enmod rewrite \
@@ -49,10 +51,17 @@ RUN buildDeps=" \
     && echo "StrictHostKeyChecking no" >> /etc/ssh/ssh_config \
     && useradd -m -d /home/$MAGENTO_USER -s /bin/bash $MAGENTO_USER \
     && usermod -aG sudo $MAGENTO_USER \
+    && echo "$MAGENTO_USER ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers \
     && touch /etc/sudoers.d/privacy \
     && echo "Defaults        lecture = never" >> /etc/sudoers.d/privacy \
     && sed -i 's/www-data/$MAGENTO_USER/g' /etc/apache2/envvars \
     && curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
+
+RUN rm /etc/ssh/sshd_config
+COPY etc/sshd_config /etc/ssh/sshd_config
+
+RUN rm /etc/supervisor/supervisord.conf
+COPY etc/supervisord.conf /etc/supervisord.conf
 
 COPY /etc/php.ini /usr/local/etc/php/
 COPY /etc/000-default.conf /etc/apache2/sites-available/
@@ -60,11 +69,14 @@ COPY /etc/auth.json /home/${MAGENTO_USER}/.composer/
 COPY /scripts/instance /usr/local/bin/
 COPY entrypoint.sh /usr/local/bin/
 
+RUN passwd $MAGENTO_USER -d
+
+EXPOSE 80 22 5000 44100
+
 WORKDIR ${SERVER_DOCROOT}
 
- ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
+ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
 
- EXPOSE 80
- CMD ["apache2-foreground"]
+# CMD []
 
 
