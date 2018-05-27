@@ -60,6 +60,8 @@ RUN buildDeps=" \
 RUN rm /etc/ssh/sshd_config
 COPY etc/sshd_config /etc/ssh/sshd_config
 
+COPY scripts/cronjobs.sh /home/${MAGENTO_USER}/
+
 RUN rm /etc/supervisor/supervisord.conf
 COPY etc/supervisord.conf /etc/supervisord.conf
 
