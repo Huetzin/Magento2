@@ -3,6 +3,7 @@
 set -e
 
 $(chown -R $MAGENTO_USER:$MAGENTO_USER $SERVER_DOCROOT)
+$(chown -R $MAGENTO_USER:$MAGENTO_USER /home/$MAGENTO_USER/.ssh)
 $(chmod -R 770 $SERVER_DOCROOT)
 
 $(chown -R $MAGENTO_USER:$MAGENTO_USER /home/$MAGENTO_USER/.composer)

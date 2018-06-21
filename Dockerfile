@@ -10,7 +10,6 @@ ENV MAGENTO_USER=magento
 ENV MAGENTO_VERSION=LATEST
 
 RUN buildDeps=" \
-        # libmysqlclient-dev \
         libsasl2-dev \
         build-essential \
     " \
@@ -22,12 +21,10 @@ RUN buildDeps=" \
         sudo \
         openssh-server\
         supervisor \
-        # mysql-client\
         libfreetype6-dev \
         libicu-dev \
         libjpeg-dev \
         libmcrypt-dev \
-        # libpng12-dev \
         libpq-dev \
         libxml2-dev \
         libxslt1-dev \
@@ -53,6 +50,7 @@ RUN buildDeps=" \
     && usermod -aG sudo $MAGENTO_USER \
     && echo "$MAGENTO_USER ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers \
     && touch /etc/sudoers.d/privacy \
+    && mkdir /home/$MAGENTO_USER/.ssh \
     && echo "Defaults        lecture = never" >> /etc/sudoers.d/privacy \
     && sed -i 's/www-data/$MAGENTO_USER/g' /etc/apache2/envvars \
     && curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
