@@ -30,20 +30,21 @@ RUN buildDeps=" \
         libxslt1-dev \
     " \
     && apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y $buildDeps $runtimeDeps \
-    && docker-php-ext-install bcmath calendar intl mcrypt opcache pdo_mysql soap zip xsl \
     && docker-php-ext-configure gd --with-freetype-dir=/usr/include/ --with-jpeg-dir=/usr/include/ \
     && docker-php-ext-install gd \
+    && docker-php-ext-install bcmath calendar intl mcrypt opcache pdo_mysql soap zip xsl \
+    # && docker-php-ext-install pcntl sockets \
     # && pecl install -o -f xdebug \
     # && docker-php-ext-enable xdebug \
     && apt-get purge -y --auto-remove $buildDeps \
     && rm -r /var/lib/apt/lists/* \
     && a2enmod rewrite \
-    && echo "opcache.save_comments=1" >> /usr/local/etc/php/conf.d/docker-php-ext-opcache.ini \
-    && echo "opcache.memory_consumption=512" >> /usr/local/etc/php/conf.d/docker-php-ext-opcache.ini \
-    && echo "opcache.enable_cli=1" >> /usr/local/etc/php/conf.d/docker-php-ext-opcache.ini \
-    && echo "opcache.max_accelerated_files=100000" >> /usr/local/etc/php/conf.d/docker-php-ext-opcache.ini \
-    && echo "opcache.validate_timestamps=0" >> /usr/local/etc/php/conf.d/docker-php-ext-opcache.ini \
-    && echo "opcache.consistency_checks=0" >> /usr/local/etc/php/conf.d/docker-php-ext-opcache.ini \
+    # && echo "opcache.save_comments=1" >> /usr/local/etc/php/conf.d/docker-php-ext-opcache.ini \
+    # && echo "opcache.memory_consumption=512" >> /usr/local/etc/php/conf.d/docker-php-ext-opcache.ini \
+    # && echo "opcache.enable_cli=1" >> /usr/local/etc/php/conf.d/docker-php-ext-opcache.ini \
+    # && echo "opcache.max_accelerated_files=100000" >> /usr/local/etc/php/conf.d/docker-php-ext-opcache.ini \
+    # && echo "opcache.validate_timestamps=0" >> /usr/local/etc/php/conf.d/docker-php-ext-opcache.ini \
+    # && echo "opcache.consistency_checks=0" >> /usr/local/etc/php/conf.d/docker-php-ext-opcache.ini \
     && mkdir /var/run/sshd \
     && echo "StrictHostKeyChecking no" >> /etc/ssh/ssh_config \
     && useradd -m -d /home/$MAGENTO_USER -s /bin/bash $MAGENTO_USER \
@@ -58,7 +59,12 @@ RUN buildDeps=" \
 RUN rm /etc/ssh/sshd_config
 COPY etc/sshd_config /etc/ssh/sshd_config
 
-COPY scripts/cronjobs.sh /home/${MAGENTO_USER}/
+# COPY scripts/cronjobs.sh /home/${MAGENTO_USER}
+ADD etc/magento2-cron /etc/cron.d
+RUN touch /var/log/cron.log \
+    && chmod 775 /var/log/cron.log
+RUN chmod 0644 /etc/cron.d/magento2-cron \
+    && crontab -u ${MAGENTO_USER} /etc/cron.d/magento2-cron
 
 RUN rm /etc/supervisor/supervisord.conf
 COPY etc/supervisord.conf /etc/supervisord.conf
